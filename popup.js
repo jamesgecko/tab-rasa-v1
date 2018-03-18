@@ -12,6 +12,7 @@ function setActiveTab(tabId) {
 
 function buildTabEl(tab) {
   let tabEl = document.createElement('span');
+  tabEl.draggable = true;
   if (tab.favIconUrl) {
     let iconEl = document.createElement('img');
     iconEl.classList.add('favicon');
@@ -40,7 +41,7 @@ function buildTabEl(tab) {
 
 function listTabs() {
   browser.tabs.query({ currentWindow: true }).then((tabs) => {
-    let tabsList = document.getElementById('tabs-list');
+    let tabsList = document.getElementsByClassName('tab-group')[0];
     let currentTabs = document.createDocumentFragment();
 
     for (let tab of tabs) {
@@ -60,6 +61,14 @@ function listTabs() {
         tabEl.style.backgroundImage = `url(${image})`;
       });
     }
+  });
+
+  sortable('.tab-group', {
+    placeholderClass: 'tab-drop',
+    acceptFrom: '.tab-group'
+  });
+  sortable('.tab-group')[0].addEventListener('sortupdate', function(e) {
+    console.log('sorted', e);
   });
 }
 

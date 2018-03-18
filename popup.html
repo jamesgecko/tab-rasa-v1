@@ -13,11 +13,19 @@
       }
 
       #container {
-        align-items: center;
         display: flex;
         justify-content: space-between;
         width: 790px;
         height: 500px;
+      }
+
+      .tab-drop {
+        display: inline-block;
+        overflow: hidden;
+        width: 96px;
+        height: 70px;
+        padding: 10px;
+        border: 2px dashed blue;
       }
 
       .tab {
@@ -61,11 +69,11 @@
       }
     </style>
     <script src="popup.js"></script>
+    <script src="vendor/html5sortable.min.js"></script>
   </head>
-
   <body>
-    <!-- <div id="container"> -->
-      <div id="tabs-list"></div>
-    <!-- </div> -->
+    <div id="container">
+      <div class="tab-group"></div>
+    </div>
   </body>
 </html>
