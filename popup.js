@@ -68,7 +68,8 @@ function listTabs() {
     let currentTabs = document.createDocumentFragment();
 
     for (let tab of tabs) {
-      if (typeof tab === 'undefined') { continue; }
+      // I don't know why I'm getting non-existent/duplicate tabs
+      if (typeof tab === 'undefined' || tabHash[tab.id]) { continue; }
       tabHash[tab.id] = Object.assign(tabs[tab.id] || {}, tab);
       let tabEl = buildTabEl(tab);
       currentTabs.appendChild(tabEl);
@@ -80,7 +81,7 @@ function listTabs() {
       browser.tabs.captureTab(tab.id).then((image) => {
         tabHash[tab.id].image = image;
         let tabEl = document.getElementById(`screen-id-${tab.id}`)
-        tabEl.style.backgroundImage = `url(${image})`;
+        tabEl.style.backgroundImage = `url(${tabHash[tab.id].image})`;
       });
     }
   });
@@ -104,6 +105,7 @@ function listTabs() {
       if (e.target.classList.contains('close-button')) {
         browser.tabs.remove(tabId);
         tabEl.parentNode.removeChild(tabEl);
+        delete tabHash[tabId];
       } else {
         setActiveTab(tabId).then(() => window.close());
       }
