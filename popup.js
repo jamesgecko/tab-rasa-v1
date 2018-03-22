@@ -1,7 +1,7 @@
 var tabHash = {}; // store sessions.getTabValue
 
 function setActiveTab(tabId) {
-  browser.tabs.query({ currentWindow: true }).then((tabs) => {
+  return browser.tabs.query({ currentWindow: true }).then((tabs) => {
     for (let tab of tabs) {
       if (tab.id == tabId) {
         browser.tabs.update(tabId, { active: true });
@@ -10,8 +10,30 @@ function setActiveTab(tabId) {
   });
 }
 
+function sortUpdate(e) {
+  e.target.classList.remove('new-group');
+}
+
+function sortStart(e) {
+  if (e.detail.startparent.children.length === 1) {
+    e.detail.startparent.classList.add('new-group');
+  }
+}
+
+function getTabContainerEl(el) {
+  if (el.classList.contains('favicon') ||
+      el.classList.contains('caption') ||
+      el.classList.contains('screenshot')) {
+        return el.parentNode;
+  }
+  if (el.classList.contains('tab')) {
+    return el;
+  }
+}
+
 function buildTabEl(tab) {
-  let tabEl = document.createElement('span');
+  let tabEl = document.createElement('a');
+  tabEl.setAttribute('href', tab.id);
   tabEl.draggable = true;
   if (tab.favIconUrl) {
     let iconEl = document.createElement('img');
@@ -46,7 +68,6 @@ function listTabs() {
 
     for (let tab of tabs) {
       if (typeof tab === 'undefined') { continue; }
-      console.log(tab);
       tabHash[tab.id] = Object.assign(tabs[tab.id] || {}, tab);
       let tabEl = buildTabEl(tab);
       currentTabs.appendChild(tabEl);
@@ -63,18 +84,6 @@ function listTabs() {
     }
   });
 
-  function sortUpdate(e) {
-    console.log('sorted', e);
-    e.target.classList.remove('new-group');
-  }
-
-  function sortStart(e) {
-    console.log(e.detail.startparent.children.length)
-    if (e.detail.startparent.children.length === 1) {
-      e.detail.startparent.classList.add('new-group');
-    }
-  }
-
   sortable('.tab-group', {
     placeholderClass: 'tab-drop',
     acceptFrom: '.tab-group'
@@ -83,6 +92,15 @@ function listTabs() {
   sortable('.tab-group')[1].addEventListener('sortupdate', sortUpdate);
   sortable('.tab-group')[0].addEventListener('sortstart', sortStart);
   sortable('.tab-group')[1].addEventListener('sortstart', sortStart);
+
+  document.addEventListener("click", (e) => {
+    e.preventDefault();
+    const tabEl = getTabContainerEl(e.target);
+    if (tabEl) {
+      let tabId = +tabEl.getAttribute('href');
+      setActiveTab(tabId).then(() => window.close());
+    }
+  });
 }
 
 document.addEventListener("DOMContentLoaded", listTabs);
