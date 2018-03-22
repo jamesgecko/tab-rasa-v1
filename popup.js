@@ -63,13 +63,26 @@ function listTabs() {
     }
   });
 
+  function sortUpdate(e) {
+    console.log('sorted', e);
+    e.target.classList.remove('new-group');
+  }
+
+  function sortStart(e) {
+    console.log(e.detail.startparent.children.length)
+    if (e.detail.startparent.children.length === 1) {
+      e.detail.startparent.classList.add('new-group');
+    }
+  }
+
   sortable('.tab-group', {
     placeholderClass: 'tab-drop',
     acceptFrom: '.tab-group'
   });
-  sortable('.tab-group')[0].addEventListener('sortupdate', function(e) {
-    console.log('sorted', e);
-  });
+  sortable('.tab-group')[0].addEventListener('sortupdate', sortUpdate);
+  sortable('.tab-group')[1].addEventListener('sortupdate', sortUpdate);
+  sortable('.tab-group')[0].addEventListener('sortstart', sortStart);
+  sortable('.tab-group')[1].addEventListener('sortstart', sortStart);
 }
 
 document.addEventListener("DOMContentLoaded", listTabs);
