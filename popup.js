@@ -23,6 +23,7 @@ function sortStart(e) {
 function getTabContainerEl(el) {
   if (el.classList.contains('favicon') ||
       el.classList.contains('caption') ||
+      el.classList.contains('close-button') ||
       el.classList.contains('screenshot')) {
         return el.parentNode;
   }
@@ -95,10 +96,17 @@ function listTabs() {
 
   document.addEventListener("click", (e) => {
     e.preventDefault();
+
     const tabEl = getTabContainerEl(e.target);
     if (tabEl) {
       let tabId = +tabEl.getAttribute('href');
-      setActiveTab(tabId).then(() => window.close());
+
+      if (e.target.classList.contains('close-button')) {
+        browser.tabs.remove(tabId);
+        tabEl.parentNode.removeChild(tabEl);
+      } else {
+        setActiveTab(tabId).then(() => window.close());
+      }
     }
   });
 }
