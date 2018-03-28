@@ -8,6 +8,11 @@ function setActiveTab(tabId) {
       }
     }
   });
+
+function closeTab(tabId, tabEl) {
+  browser.tabs.remove(tabId);
+  tabEl.parentNode.removeChild(tabEl);
+  delete tabHash[tabId];
 }
 
 function sortUpdate(e) {
@@ -111,9 +116,7 @@ function listTabs() {
       let tabId = +tabEl.getAttribute('href');
 
       if (e.target.classList.contains('close-button')) {
-        browser.tabs.remove(tabId);
-        tabEl.parentNode.removeChild(tabEl);
-        delete tabHash[tabId];
+        closeTab(tabId, tabEl);
       } else {
         setActiveTab(tabId).then(() => window.close());
       }
