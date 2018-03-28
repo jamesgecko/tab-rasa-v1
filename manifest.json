@@ -11,6 +11,9 @@
     "default_icon": "icon.png",
     "default_title": "Tab Rasa"
   },
+  "background": {
+    "scripts": ["background.js"]
+  },
   "permissions": [ 
     "activeTab",
     "tabs",

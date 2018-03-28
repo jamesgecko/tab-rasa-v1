@@ -35,6 +35,7 @@ function getTabContainerEl(el) {
 function buildTabEl(tab) {
   let tabEl = document.createElement('a');
   tabEl.setAttribute('href', tab.id);
+  tabEl.id = `tab-${tab.id}`;
   tabEl.draggable = true;
   if (tab.favIconUrl) {
     let iconEl = document.createElement('img');
@@ -75,6 +76,13 @@ function listTabs() {
       currentTabs.appendChild(tabEl);
     }
     tabsList.appendChild(currentTabs);
+    browser.runtime.getBackgroundPage()
+      .then((bgPage) => bgPage.currentTab())
+      .then((tab) => {
+        console.log(tab);
+        const activeTabEl = document.getElementById(`tab-${tab.id}`);
+        activeTabEl.classList.add('active-tab');
+      });
 
     for (let tab of tabs) {
       if (typeof tab === 'undefined') { continue; }
