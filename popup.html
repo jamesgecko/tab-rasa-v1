@@ -49,6 +49,7 @@
         width: 100px;
         height: 70px;
         background-repeat: round;
+        background-size: 100%;
       }
 
       .caption {
@@ -80,7 +81,6 @@
         width: 100%;
         display: block;
       }
-      
 
       .new-group {
         position: absolute;
@@ -95,6 +95,10 @@
         border: 2px dashed blue;
       }
 
+      .active-group {
+        border: 2px dashed red;
+      }
+
       .bg-1 { background-color: #dbffe1; }
       .bg-2 { background-color: #f7ffdb; border-top: 2px dashed blue; }
       .bg-3 { background-color: #ffe9a8; }
@@ -106,7 +110,7 @@
   </head>
   <body>
     <div id="container">
-      <div class="tab-group bg-1"></div>
+      <div class="tab-group bg-1 active-group"></div>
       <div class="tab-group bg-2 new-group"></div>
     </div>
   </body>

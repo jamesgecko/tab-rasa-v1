@@ -1,18 +1,48 @@
-var tabHash = {}; // store sessions.getTabValue
+let bg;
+
+function tabsInGroup(groupId) {
+  let tabList = [];
+  for (let [tabId, metadata] of Object.entries(bg.tabHash)) {
+    if (metadata.groupId === groupId) {
+      tabList.push(tabId);
+    }
+  }
+  return tabList;
+}
+
+function activateTabGroup(groupId) {
+  const tabList = tabsInGroup(groupId);
+  return browser.tabs.show(tabsInGroup);
+}
+
+function moveTabToGroup(tabId, groupId) {
+  bg.updateTabHash(tabId, { group: groupId });
+  // if (groupId !== activeTabGroupId) {
+  //   browser.tabs.hide(tabid);
+  // }
+}
 
 function setActiveTab(tabId) {
+  // if tab's group group isn't active, change active group
   return browser.tabs.query({ currentWindow: true }).then((tabs) => {
     for (let tab of tabs) {
+      // if active group changed,
+      //    if tabHash[tab.id].group !== activeTabGroup, add to hide list
+      //    else, add to show list
       if (tab.id == tabId) {
         browser.tabs.update(tabId, { active: true });
       }
     }
-  });
+    // if active group changed...
+    //    browser.tabs.hide(hiddenTabs);
+    //    browser.tabs.show(visibleTabs);
+});
+}
 
 function closeTab(tabId, tabEl) {
   browser.tabs.remove(tabId);
   tabEl.parentNode.removeChild(tabEl);
-  delete tabHash[tabId];
+  delete bg.tabHash[tabId];
 }
 
 function sortUpdate(e) {
@@ -56,6 +86,9 @@ function buildTabEl(tab) {
   let screenEl = document.createElement('div');
   screenEl.classList.add('screenshot');
   screenEl.id = `screen-id-${tab.id}`;
+  if (bg.tabHash[tab.id] && bg.tabHash[tab.id].image) {
+    screenEl.style.backgroundImage = `url(${bg.tabHash[tab.id].image})`;
+  }
 
   let labelEl = document.createElement('div');
   labelEl.classList.add('caption');
@@ -69,21 +102,18 @@ function buildTabEl(tab) {
 }
 
 function listTabs() {
-  browser.tabs.query({ currentWindow: true }).then((tabs) => {
+  return browser.tabs.query({ currentWindow: true }).then((tabs) => {
     let tabsList = document.getElementsByClassName('tab-group')[0];
     let currentTabs = document.createDocumentFragment();
 
     for (let tab of tabs) {
       // I don't know why I'm getting non-existent/duplicate tabs
-      if (typeof tab === 'undefined' || tabHash[tab.id]) { continue; }
-      tabHash[tab.id] = Object.assign(tabs[tab.id] || {}, tab);
+      if (typeof tab === 'undefined' || bg.tabHash[tab.id]) { continue; }
       let tabEl = buildTabEl(tab);
       currentTabs.appendChild(tabEl);
     }
     tabsList.appendChild(currentTabs);
-    browser.runtime.getBackgroundPage()
-      .then((bgPage) => bgPage.currentTab())
-      .then((tab) => {
+      bg.currentTab().then((tab) => {
         console.log(tab);
         const activeTabEl = document.getElementById(`tab-${tab.id}`);
         activeTabEl.classList.add('active-tab');
@@ -92,13 +122,16 @@ function listTabs() {
     for (let tab of tabs) {
       if (typeof tab === 'undefined') { continue; }
       browser.tabs.captureTab(tab.id).then((image) => {
-        tabHash[tab.id].image = image;
+        bg.updateTabHash(tab.id, { image });
         let tabEl = document.getElementById(`screen-id-${tab.id}`)
-        tabEl.style.backgroundImage = `url(${tabHash[tab.id].image})`;
+        tabEl.style.backgroundImage = `url(${bg.tabHash[tab.id].image})`;
       });
     }
+    console.log(bg.tabHash);
   });
+}
 
+function setupEvents() {
   sortable('.tab-group', {
     placeholderClass: 'tab-drop',
     acceptFrom: '.tab-group'
@@ -124,4 +157,13 @@ function listTabs() {
   });
 }
 
-document.addEventListener("DOMContentLoaded", listTabs);
+let bgPagePromise = browser.runtime.getBackgroundPage();
+
+function init() {
+  bgPagePromise.then((bgPage) => {
+    bg = bgPage;
+    listTabs().then(setupEvents)
+  });
+}
+
+document.addEventListener("DOMContentLoaded", init);
